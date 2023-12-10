@@ -2,6 +2,8 @@
 
 ​	Course Spider for USST是一款基于Python的后台挂载工具，主要用于在USST（上海理工大学）教务处自动检查是否有课程余量并进行合适操作。本项目旨在为学生提供方便快捷的课程获取途径，助力高效学习。
 
+![image-20231210142418875](C:\Users\ASUS\AppData\Roaming\Typora\typora-user-images\image-20231210142418875.png)
+
 ##### 项目特点：
 
 1. 采用Splinter库进行网页解析，轻松应对复杂网页结构。
