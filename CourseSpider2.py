@@ -31,19 +31,24 @@ def save_cookie(cookies):
 class Spider_Dean_Office:
     def __init__(self, driver='edge', driver_dir=None, user_id=None, user_password=None, course=None):
         # System Initiating
-        if driver_dir:
-            self.driver = driver_dir
+        if driver_dir:  # 添加驱动路径
+            if driver == 'edge':
+                self.driver = './edgedriver/' + driver_dir
+            elif driver == 'chrome':
+                self.driver = './chromedriver/' + driver_dir
+            else:
+                self.driver = './' + driver_dir
         else:
-            self.driver_dir = './msedgedriver.exe'
+            self.driver_dir = './edgedriver/msedgedriver.exe'
         self.current_path = os.path.dirname(os.path.abspath(__file__))
-        # browser Data
+        # Browser Data
         if driver == 'edge':
             local_service = Service(executable_path=self.driver)
             self.browser = Browser(driver_name='edge', service=local_service)
         elif driver == 'chrome':
             local_service = Service(executable_path=self.driver)  # 参考:https://splinter.readthedocs.io/en/latest/drivers/chrome.html
             self.browser = Browser(driver_name='chrome', service=local_service)
-        # web data
+        # Web data
         self.url = "http://jwgl.usst.edu.cn/sso/jziotlogin"
         if user_id and user_password:
             self.user_id = user_id
