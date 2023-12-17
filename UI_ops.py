@@ -16,7 +16,7 @@ class Dialog(QDialog):
         self.init_ui(parent)
 
     def init_ui(self, parent):
-
+        self.setWindowTitle('新增课程信息')
         """水平布局"""
         hbox = QHBoxLayout()
 
@@ -70,12 +70,19 @@ class Dialog(QDialog):
 
     def show_error(self, error=None):
         if error:
-            QMessageBox.critical(self, "错误", "未知错误")
+            if 'version' and 'Driver' in str(error):
+                QMessageBox.critical(self, "错误", "Error: \n" + str(error)[:300] + "..." +
+                                     "\n请尝试在管理器中更换浏览器内核!\n如果还未成功请根据提示下载匹配版本的浏览器内核!")
+            else:
+                QMessageBox.critical(self, "错误", "Error: \n" + str(error))
         else:
-            QMessageBox.critical(self, "错误", "Error:" + error)
+            QMessageBox.critical(self, "错误", "未知错误")
 
     def show_success(self):
-        QMessageBox.information(self, "挂载结束", "后台挂载结束，请检查你是否已经选上目标课程。")
+        QMessageBox.information(self, "挂载结束", "后台挂载结束，请确认你是否已经选上目标课程。")
+
+    def show_warning(self, warning: str):
+        QMessageBox.warning(self, "警告", warning, QMessageBox.Cancel)
 
     @staticmethod
     def get_add_dialog(parent=None):

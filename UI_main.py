@@ -38,7 +38,7 @@ class DataManager(QWidget):
         self.add_btn.clicked.connect(self.add_btn_click)
 
         self.del_btn = QPushButton()
-        self.del_btn.setText('删除课程')
+        self.del_btn.setText('删除选中课程')
         self.del_btn.clicked.connect(self.del_data_row)
 
         self.submit_btn = QPushButton()
@@ -55,6 +55,21 @@ class DataManager(QWidget):
         self.pwdlabel = QLabel()
         self.pwdlabel.setText("密码")
         self.password = QLineEdit()
+
+        self.btn_edge = QRadioButton('Edge浏览器')
+        self.btn_edge.setChecked(True)  # 设置默认选中状态
+        self.btn_edge.toggled.connect(lambda: self.switch2edge())  # 设置按钮的槽函数
+
+        self.btn_chrome = QRadioButton('谷歌浏览器')
+        self.btn_chrome.toggled.connect(lambda: self.switch2chrome())  # 设置按钮的槽函数
+
+        self.version_label = QLabel("浏览器版本")
+        self.combo = QComboBox(self)
+        self.combo.addItems(["msedgedriver_112.exe", "msedgedriver_113.exe", "msedgedriver_114.exe",
+                             "msedgedriver_115.exe", "msedgedriver_116.exe", "msedgedriver_117.exe",
+                             "msedgedriver_118.exe", "msedgedriver_119.exe", "msedgedriver_120.exe",
+                             "msedgedriver_121.exe"])
+        self.combo.setCurrentIndex(1)
 
         """数据列表设置"""
         self.cource_table = QTableWidget()
@@ -76,22 +91,36 @@ class DataManager(QWidget):
                 headItem.setTextAlignment(Qt.AlignVCenter)
 
         '''加入布局'''
-        self.user_widget = QWidget()
+        self.user_widget = QWidget()  # 用户名输入框
         user_layer = QHBoxLayout()
         user_layer.addWidget(self.ulabel)
         user_layer.addWidget(self.uname)
         self.user_widget.setLayout(user_layer)
 
-        self.pwd_widget = QWidget()
+        self.pwd_widget = QWidget()  # 密码输入框
         pwd_layer = QHBoxLayout()
         pwd_layer.addWidget(self.pwdlabel)
         pwd_layer.addWidget(self.password)
         self.pwd_widget.setLayout(pwd_layer)
 
+        self.browser_widget = QWidget()  # 浏览器单选框
+        radio_layout = QHBoxLayout()
+        radio_layout.addWidget(self.btn_edge)
+        radio_layout.addWidget(self.btn_chrome)
+        self.browser_widget.setLayout(radio_layout)
+
+        self.version_widget = QWidget()  # 版本下拉框
+        version_layout = QHBoxLayout()
+        version_layout.addWidget(self.version_label)
+        version_layout.addWidget(self.combo)
+        self.version_widget.setLayout(version_layout)
+
         self.person_widget = QWidget()
         person_layer = QVBoxLayout()
         person_layer.addWidget(self.user_widget)
         person_layer.addWidget(self.pwd_widget)
+        person_layer.addWidget(self.browser_widget)
+        person_layer.addWidget(self.version_widget)
         self.person_widget.setLayout(person_layer)
 
         grid.addWidget(self.person_widget, 0, 0, 1, 1)
@@ -124,6 +153,8 @@ class DataManager(QWidget):
             for i in range(len(data)):
                 for j in range(len(data[0])):
                     self.cource_table.setItem(i, j, QTableWidgetItem(str(data[i][j])))
+        else:
+            self.cource_table.setRowCount(0)
 
     # 将删除数据按钮绑定到该槽函数
     def del_data_row(self):
@@ -132,34 +163,64 @@ class DataManager(QWidget):
         :return:
         """
         row_select = self.cource_table.selectedItems()
-        print(row_select)
+        # print(row_select)
         if len(row_select) != 0:
             row = row_select[0].row()
-            print(row)
+            # print(row)
             self.cource_table.removeRow(row)
-            del self.data_list[row]
+            if self.data_list:
+                del self.data_list[row]
+            else:
+                self.query_data()
         print(self.cource_table)
+
+    def switch2chrome(self):
+        # combo = self.person_widget.layout().itemAt(1).widget().layout().itemAt(1).widget()  # ComboBox
+        self.combo.clear()
+        self.combo.addItems(["chromedriver_114.exe", "chromedriver_115.exe", "chromedriver_116.exe",
+                             "chromedriver_117.exe", "chromedriver_118.exe", "chromedriver_119.exe",
+                             "chromedriver_120.exe"
+                             ])
+        self.combo.setCurrentIndex(3)
+
+    def switch2edge(self):
+        self.combo.clear()
+        self.combo.addItems(["msedgedriver_112.exe", "msedgedriver_113.exe", "msedgedriver_114.exe",
+                             "msedgedriver_115.exe", "msedgedriver_116.exe", "msedgedriver_117.exe",
+                             "msedgedriver_118.exe", "msedgedriver_119.exe", "msedgedriver_120.exe",
+                             "msedgedriver_121.exe"])
+        self.combo.setCurrentIndex(1)
 
     def submit_data(self):
         """
         提交数据
         :return:
         """
-        if self.uname.text().strip() != '' and self.password.text().strip() != '':
-            user = self.uname.text().strip()
-            pwd = self.password.text().strip()
-            try:
-                spider = Spider_Dean_Office(user_id=user, user_password=pwd, course=self.data_list)
-                spider.visitUrl()
-                spider.quit()
-                Dialog.show_success(self)
-            except Exception as error:
-                Dialog.show_error(self, error=error)
+        user = self.uname.text().strip()
+        pwd = self.password.text().strip()
+        if user != '' and pwd != '':
+            if len(user) == 10 and user.isdigit():
+                if self.btn_edge.isChecked():
+                    driver = 'edge'
+                else:
+                    driver = 'chrome'
+                driver_dir = self.combo.itemText(self.combo.currentIndex())
+                try:
+                    spider = Spider_Dean_Office(driver=driver, driver_dir='./' + driver_dir,
+                                                user_id=user, user_password=pwd, course=self.data_list)
+                    spider.visitUrl()
+                    spider.quit()
+                    Dialog.show_success(self)
+                except Exception as error:
+                    Dialog.show_error(self, error=error)
+            else:
+                Dialog.show_warning(self, "请填入正确的账号!")
         else:
-            pass
+            Dialog.show_warning(self, "请填入完整且正确的信息后重试!")
+        self.query_data()
 
     def closeEvent(self, event):  # 关闭窗口触发以下事件
-        a = QMessageBox.question(self, '关闭', '你确定要退出吗?', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        a = QMessageBox.question(self, '关闭', '你确定要退出吗?', QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
         if a == QMessageBox.Yes:
             event.accept()  # 接受关闭事件
         else:

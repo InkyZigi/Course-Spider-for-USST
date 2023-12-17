@@ -29,17 +29,19 @@ def save_cookie(cookies):
 
 
 class Spider_Dean_Office:
-    def __init__(self, driver='edge', user_id=None, user_password=None, course=None):
+    def __init__(self, driver='edge', driver_dir=None, user_id=None, user_password=None, course=None):
         # System Initiating
-        self.chrome_dir = r'./chromedriver.exe'
-        self.edge_dir = r'./edge.exe'
+        if driver_dir:
+            self.driver = driver_dir
+        else:
+            self.driver_dir = './msedgedriver.exe'
         self.current_path = os.path.dirname(os.path.abspath(__file__))
         # browser Data
         if driver == 'edge':
-            local_service = Service(executable_path='./msedgedriver.exe')
+            local_service = Service(executable_path=self.driver)
             self.browser = Browser(driver_name='edge', service=local_service)
         elif driver == 'chrome':
-            local_service = Service(executable_path='./chromedriver.exe')  # 参考:https://splinter.readthedocs.io/en/latest/drivers/chrome.html
+            local_service = Service(executable_path=self.driver)  # 参考:https://splinter.readthedocs.io/en/latest/drivers/chrome.html
             self.browser = Browser(driver_name='chrome', service=local_service)
         # web data
         self.url = "http://jwgl.usst.edu.cn/sso/jziotlogin"
@@ -72,7 +74,7 @@ class Spider_Dean_Office:
             f.write(time.strftime('[%Y-%m-%d %H:%M:%S] ') + "Operation: " + log_content + "\n")
 
     def quit(self):
-        time.sleep(10)
+        time.sleep(5)
         self.browser.quit()
 
     def visitUrl(self, url=None):
